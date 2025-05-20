@@ -4,13 +4,8 @@
 import requests
 from requests.exceptions import ConnectionError
 from urllib3.exceptions import ProtocolError
-import json
 import argparse
 import base64
-
-# TODO:
-# - Add handling for SSL Auth verification/ignore
-
 
 def parse_args():
     parser = argparse.ArgumentParser(
