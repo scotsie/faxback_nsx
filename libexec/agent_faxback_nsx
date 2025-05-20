@@ -1,0 +1,279 @@
+#!/usr/bin/env python3
+# -*- encoding: utf-8; py-indent-offset: 4 -*-
+
+import requests
+from requests.exceptions import ConnectionError
+from urllib3.exceptions import ProtocolError
+import json
+import argparse
+import base64
+
+# TODO:
+# - Add handling for SSL Auth verification/ignore
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        prog='faxback_agent',
+        description='Connects to the various faxback APIs to collect data for monitoring.',
+        epilog='Check is a work in progress written for CheckMK.'
+    )
+    parser.add_argument('--site',
+                        help='The FQDN or IP address to query for the REST API.')
+    parser.add_argument('--username',
+                        help='Username to login to the REST API.')
+    parser.add_argument('--password',
+                        help='Password to login to the REST API.')
+    parser.add_argument('--pw2',
+                        help='PW2 formatted auth to login to the REST API.')
+    parser.add_argument('--protocol',
+                        choices=['http', 'https'],
+                        default='https',
+                        help='Protocol to use when connecting to the REST API (http or https).')
+    parser.add_argument('--debug', action='store_true',
+                        default=False,
+                        help=argparse.SUPPRESS)
+    parser.add_argument('--disabled_services',
+                    nargs='+',
+                    choices=['None', 'BlockConnection_Server', 'Port_Server', 'Queue_Server',
+                             'ATA_Connector', 'Provisioning_Server', 'API_Server',
+                             'Conversion_Server', 'Transmission_Server', 'Email_Server',
+                             'Broadcast_Server', 'Report_Server'],
+                    help='Space separated list of services to disable. Example: BlockConnection_Server Port_Server',
+                    default=['None'])
+    parser.add_argument('--no-ssl-verify',
+                       action='store_true',
+                       help='Disable SSL certificate verification')
+    return parser.parse_args()
+
+def update_matching_keys(primary: dict, secondary: dict) -> dict:
+    """
+    Updates the values in `primary` with values from `secondary` for matching keys.
+    Special handling for:
+      - Dictionaries with '#text': extract the '#text' value.
+      - 'DatabaseConnections': concatenate key-value pairs excluding '@type'.
+    
+    Args:
+        primary (dict): The dictionary to be updated.
+        secondary (dict): The dictionary providing new values.
+    
+    Returns:
+        dict: The updated primary dictionary.
+    """
+    for key in primary:
+        if key in secondary:
+            value = secondary[key]
+            if isinstance(value, dict):
+                if key == "DatabaseConnections":
+                    # Exclude '@type' and join remaining key-value pairs
+                    connections = [f"{k}={v}" for k, v in value.items() if k != "@type"]
+                    primary[key] = "; ".join(connections)
+                elif "#text" in value:
+                    primary[key] = value["#text"]
+                else:
+                    primary[key] = str(value)
+            else:
+                primary[key] = value
+    return primary
+
+def main(args):
+    # Define services with corrected JSON payloads
+    services = [
+        {"Name": "BlockConnection_Server",
+         "Params": {"_t": "cs_js"},
+         "Port": 60,
+         "PayloadName": "IPFSConSrv",
+         "Payload": {"IPFSConSrv":{"GetStats":{"PW2":args.pw2}}},
+         "Stats": {"SendingCount": -1, "ReceivingCount": -1, "PeakSendingCount": -1,
+                   "PeakReceivingCount": -1, "SentCount": -1, "ReceivedCount": -1,
+                   "SentSeconds": -1, "ReceivedSeconds": -1, "LoginCapacity": -1,
+                   "LoginCount": -1, "PeakLoginCount": -1, "Enabled": -1,
+                   "TcpCurrentCount": -1, "TcpPeakCount": -1, "TcpCount": -1,
+                   "HttpCurrentCount": -1, "HttpPeakCount": -1, "HttpCount": -1,
+                   "CpuTime": -1, "StatusNum": -1}},
+        {"Name": "Port_Server",
+         "Params": {"_t": "ps_js"},
+         "Port": 61,
+         "PayloadName": "IPFSPortSrv",
+         "Payload": {"IPFSPortSrv":{"GetStats":{"PW2":args.pw2}}},
+         "Stats": {"SendingCount": -1, "ReceivingCount": -1, "PeakSendingCount": -1,
+                   "PeakReceivingCount": -1, "SentCount": -1, "ReceivedCount": -1,
+                   "SentSeconds": -1, "ReceivedSeconds": -1, "LoginCount": -1,
+                   "PeakLoginCount": -1, "Enabled": -1, "TcpCurrentCount": -1,
+                   "TcpPeakCount": -1, "TcpCount": -1, "HttpCurrentCount": -1,
+                   "HttpPeakCount": -1, "HttpCount": -1, "CpuTime": -1,
+                   "StatusNum": -1}},
+        {"Name": "Queue_Server",
+         "Params": {"_t": "qs_js"},
+         "Port": 72,
+         "PayloadName": "IPFSQueueSrv",
+         "Payload": {"IPFSQueueSrv":{"GetStats":{"PW2":args.pw2}}},
+         "Stats": {"SendingCount": -1, "ReceivingCount": -1, "PeakSendingCount": -1,
+                   "PeakReceivingCount": -1, "SentCount": -1, "ReceivedCount": -1,
+                   "SentSeconds": -1, "ReceivedSeconds": -1, "LoginCount": -1,
+                   "PeakLoginCount": -1, "Enabled": -1, "TcpCurrentCount": -1,
+                   "TcpPeakCount": -1, "TcpCount": -1, "HttpCurrentCount": -1,
+                   "HttpPeakCount": -1, "HttpCount": -1, "CpuTime": -1,
+                   "StatusNum": -1}},
+        {"Name": "ATA_Connector",
+         "Params": {"_t": "at_js"},
+         "Port": 71,
+         "PayloadName": "ConnectorService",
+         "Payload": {"ConnectorService": {"UserName": args.username,"Password": args.password,"GetStats": {"type": "TAGLIST"}}},
+         "Stats": {"SendingCount": -1, "ReceivingCount": -1, "PeakSendingCount": -1,
+                   "PeakReceivingCount": -1, "SentSeconds": -1, "ReceivedSeconds": -1,
+                   "LoginCount": -1, "LoginCapacity": -1, "PeakLoginCount": -1, "Enabled": -1,
+                   "TcpCurrentCount": -1, "TcpPeakCount": -1, "TcpCount": -1,
+                   "HttpCurrentCount": -1, "HttpPeakCount": -1, "HttpCount": -1,
+                   "CpuTime": -1, "StatusNum": -1, "SendPorts": -1,
+                   "TotalMemoryMb": -1, "PrivateMemoryMb": -1, "PagedMemoryMb": -1,
+                   "NonPagedSystemMemoryMb": -1, "PeakWorkingSetMemoryMb": -1, "PeakPagedMemoryMb": -1,
+                   "PeakVirtualMemoryMb": -1}},
+        {"Name": "Provisioning_Server",
+         "Params": {"_t": "pv_js"},
+         "Port": 73,
+         "PayloadName": "IPFSProvSrv",
+         "Payload": {"IPFSProvSrv": {"GetStats": {"ProviderId": args.username, "UserName": args.username, "Password": args.password}}},
+         "Stats": {"NSXMode": -1, "RequestCount": -1, "CurrentRequestCount": -1,
+                   "PeakRequestCount": -1, "Enabled": -1, "TcpCurrentCount": -1,
+                   "TcpPeakCount": -1, "TcpCount": -1, "HttpCurrentCount": -1,
+                   "HttpPeakCount": -1, "HttpCount": -1, "CpuTime": -1,
+                   "StatusNum": -1}},
+        {"Name": "API_Server",
+         "Params": {"_t": "ns_js"},
+         "Port": 81,
+         "PayloadName": "NSX",
+         "Payload": {"NSX": {"GetStats": {"UserName": args.username,"Password": args.password}}},
+         "Stats": {"Enabled": -1, "Ready": -1, "TcpCurrentCount": -1,
+                   "TcpPeakCount": -1, "TcpCount": -1, "HttpCurrentCount": -1,
+                   "HttpPeakCount": -1, "HttpCount": -1, "CpuTime": -1,
+                   "StatusNum": -1}},
+        {"Name": "Conversion_Server",
+         "Params": {"_t": "cv_js"},
+         "Port": 67,
+         "PayloadName": "DocConSrv",
+         "Payload": {"DocConSrv": {"PW2": args.pw2,"GetStats": {"type": "TAGLIST"}}},
+         "Stats": {"Enabled": -1, "CpuTime": -1,
+                   "DatabaseConnections": "NULL", "ConvertSuccessCount": -1, "ConvertFailCount": -1,
+                   "ConversionsInProgress": -1, "StatusNum": -1}},
+        {"Name": "Transmission_Server",
+         "Params": {"_t": "tx_js"},
+         "Port": 66,
+         "PayloadName": "TrnSrv",
+         "Payload": {"TrnSrv": {"PW2": args.pw2,"GetStats": {"type": "TAGLIST"}}},
+         "Stats": {"Enabled": -1, "CpuTime": -1,
+                   "DatabaseConnections": "NULL", "ReceivingCount": -1, "SendingCount": -1,
+                   "SendPendingCount": -1, "StatusNum": -1}},
+        {"Name": "Email_Server",
+         "Params": {"_t": "em_js"},
+         "Port": 68,
+         "PayloadName": "EmailSrv",
+         "Payload": {"EmailSrv": {"PW2": args.pw2,"GetStats": {"type": "TAGLIST"}}},
+         "Stats": {"Enabled": -1, "CpuTime": -1,
+                   "DatabaseConnections": "NULL", "EmailReceivedCount": -1, "EmailSentCount": -1,
+                   "StatusNum": -1}},
+        {"Name": "Broadcast_Server",
+         "Params": {"_t": "bs_js"},
+         "Port": 69,
+         "PayloadName": "BroadcastSrv",
+         "Payload": {"BroadcastSrv": {"PW2": args.pw2,"GetStats": {"type": "TAGLIST"}}},
+         "Stats": {"Enabled": -1, "CpuTime": -1, "DatabaseConnections": "NULL",
+                   "StatusNum": -1}},
+        {"Name": "Report_Server", 
+         "Params": {"_t": "rs_js"},
+         "Port": 99,
+         "PayloadName": "RptSrv",
+         "Payload": {"RptSrv": {"UserName": args.username, "Password": args.password, "GetStats": {"type": "TAGLIST"}}},
+         "Stats": {"Enabled": -1, "CpuTime": -1, "StatusNum": -1}}
+    ]
+    
+    if args.debug:
+        print(f"DEBUG: {args=}")
+        print(f"DEBUG: Original services count: {len(services)}")
+        print(f"DEBUG: Disabled services: {args.disabled_services}")
+    
+    # Create a new list excluding disabled services
+    if 'None' not in args.disabled_services:
+        services = [service for service in services if service["Name"] not in args.disabled_services]
+        
+        if args.debug:
+            print(f"DEBUG: Services after filtering: {len(services)}")
+            print(f"DEBUG: Remaining services: {[service['Name'] for service in services]}")
+    
+    with requests.Session() as session:
+        if args.no_ssl_verify:
+            # Disable both certificate and hostname verification
+            session.verify = False
+            session.trust_env = False
+
+            # Create a custom transport adapter that ignores hostname verification
+            import urllib3
+            class HostNameIgnoringAdapter(requests.adapters.HTTPAdapter):
+                def init_poolmanager(self, *args, **kwargs):
+                    kwargs['assert_hostname'] = False
+                    return super().init_poolmanager(*args, **kwargs)
+            
+            # Mount the custom adapter for both http and https
+            session.mount('https://', HostNameIgnoringAdapter())
+            session.mount('http://', HostNameIgnoringAdapter())
+            
+            # Disable all SSL warnings
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+        credentials = base64.b64encode(f"{args.username}:{args.password}".encode()).decode()
+        headers = {
+            "Authorization": f"Basic {credentials}",
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+        }
+        
+        # Use the session for requests
+        for service in services:
+            try:
+                url = f"{args.protocol}://{args.site}/rest/nsx/"
+                params = service["Params"]
+                headers = {"Content-Type": "application/json"}
+                # Use session.post instead of requests.post
+                response = session.post(url, json=service["Payload"], 
+                                     headers=headers, params=params)
+                if args.debug:
+                    print(f"DEBUG: {response=}")
+                    print(f"DEBUG: {response.status_code=}")
+                    print(f"DEBUG: {response.headers=}")
+                    print(f"DEBUG: {response.text=}")
+                response.raise_for_status()
+                json_response = response.json()
+                found = False
+                # Add auth error checking
+                for key, value in json_response.items():
+                    headername = f"faxback_nsx_{service['Name'].lower()}"
+                    if isinstance(value, dict):
+                        # Check for auth errors in GetStatsResponse
+                        if "GetStatsResponse" in value:
+                            stats_response = value["GetStatsResponse"]
+                            if "Status" in stats_response and "StatusNum" in stats_response:
+                                if stats_response["Status"] in ["Invalid password", "Access denied"] or stats_response["StatusNum"] == 30017:
+                                    print(f"<<<{headername}:sep(0)>>>")
+                                    auth_error = {
+                                        "StatusNum": stats_response["StatusNum"],
+                                        "Status": stats_response.get("Status", "Missing error message"),
+                                    }
+                                    print(auth_error)
+                                    continue
+                            found = True
+                            print(f"<<<{headername}:sep(0)>>>")
+                            normalized_stats = update_matching_keys(service["Stats"], stats_response)
+                            print(normalized_stats)
+
+                if not found:
+                    continue
+            except (ConnectionError, ProtocolError, ConnectionResetError) as e:
+                if args.debug:
+                    print(f"Connection error: {e}")
+                continue
+            except Exception as e:
+                print(f"Error contacting {service['Name']}: {e}")
+
+if __name__ == "__main__":
+    args = parse_args()
+    main(args)
