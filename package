@@ -1,8 +1,15 @@
 {'author': 'Scotsie (mscottcrace@gmail.com)',
- 'description': 'A special agent meant to query the Faxback device API and '
-                   'return stats for active interfaces found.\n',
+ 'description': 'A special agent meant to query the Faxback device API(s) and '
+                'if a response is found, return metrics for graphing and '
+                'monitoring.\n'
+                '\n'
+                'TO DO:\n'
+                '- Production side bug with query Broadcast_Server, '
+                'Report_Server\n'
+                '- Graph layout improvements\n'
+                '- Dynamic thresholding via GUI\n',
  'download_url': 'https://github.com/scotsie/faxback_nsx',
- 'files': {'cmk_addons_plugins': ['faxback_nsx/agent_based/faxback_nsx_api_server.py', 
+ 'files': {'cmk_addons_plugins': ['faxback_nsx/agent_based/faxback_nsx_api_server.py',
                                   'faxback_nsx/agent_based/faxback_nsx_ata_connector.py',
                                   'faxback_nsx/agent_based/faxback_nsx_blockconnection_server.py',
                                   'faxback_nsx/agent_based/faxback_nsx_broadcast_server.py',
@@ -16,11 +23,10 @@
                                   'faxback_nsx/graphing/graphing_faxback_nsx.py',
                                   'faxback_nsx/libexec/agent_faxback_nsx',
                                   'faxback_nsx/rulesets/faxback_nsx_special_agent.py',
-                                  'faxback_nsx/server_side_calls/special_agent.py'],
-                                  },
+                                  'faxback_nsx/server_side_calls/special_agent.py']},
  'name': 'faxback_nsx',
  'title': 'Faxback NSX REST API Special Agent',
- 'version': '2.4.0',
- 'version.min_required': '2.3.0',
- 'version.packaged': 'cmk-mkp-tool 1.0.0',
+ 'version': '2.3.0',
+ 'version.min_required': '2.3.0p12',
+ 'version.packaged': '2.3.0p19',
  'version.usable_until': '2.5.0'}
