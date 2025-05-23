@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PKGNAME=$(python3 -c 'print(eval(open("package").read())["name"])')
+PKGNAME=$(python3 -c 'print(eval(open("faxback_nsx.manifest").read())["name"])')
 ln -sv $WORKSPACE $OMD_ROOT/local/lib/python3/cmk_addons/plugins/$PKGNAME
 
 # ORIGINAL SCRIPT
