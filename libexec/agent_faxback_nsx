@@ -205,7 +205,7 @@ def main(args):
             import urllib3
             class HostNameIgnoringAdapter(requests.adapters.HTTPAdapter):
                 def init_poolmanager(self, *args, **kwargs):
-                    kwargs['assert_hostname'] = False
+                    kwargs['block'] = False
                     return super().init_poolmanager(*args, **kwargs)
             
             # Mount the custom adapter for both http and https
