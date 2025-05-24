@@ -41,35 +41,71 @@ def parse_args():
                        help='Disable SSL certificate verification')
     return parser.parse_args()
 
-def update_matching_keys(primary: dict, secondary: dict) -> dict:
+def compare_dictionaries(primary: dict, secondary: dict, metricprefix: str) -> dict:
     """
     Updates the values in `primary` with values from `secondary` for matching keys.
-    Special handling for:
-      - Dictionaries with '#text': extract the '#text' value.
-      - 'DatabaseConnections': concatenate key-value pairs excluding '@type'.
-    
+
     Args:
         primary (dict): The dictionary to be updated.
         secondary (dict): The dictionary providing new values.
-    
+        serviceprefix (str): The string to prefix to make each metric unique.
+
     Returns:
         dict: The updated primary dictionary.
     """
-    for key in primary:
+    updated_primary = {}
+
+    for key in primary.keys():
+        if 'Count' in key:
+            newkey = metricprefix + "_" + key
+        else:
+            newkey = key
+
         if key in secondary:
             value = secondary[key]
-            if isinstance(value, dict):
-                if key == "DatabaseConnections":
-                    # Exclude '@type' and join remaining key-value pairs
-                    connections = [f"{k}={v}" for k, v in value.items() if k != "@type"]
-                    primary[key] = "; ".join(connections)
-                elif "#text" in value:
-                    primary[key] = value["#text"]
-                else:
-                    primary[key] = str(value)
+            updated_primary[newkey] = value
+            
+    return updated_primary
+
+def normalize_data(object):
+    """
+    Special handling for:
+        - Dictionaries:
+            - With '#text': extract the '#text' value as an integer or float.
+            - With 'DatabaseConnections': convert the concatenate key-value pairs excluding '@type'.
+      - Keys whose values are digits: prepend `metricprefix` to the key name.
+
+    Args:
+        dictonary (dict): The dictionary to be updated.
+
+    Returns:
+        dictionary:
+    """
+    if isinstance(object, dict):
+        new_dict = {}
+        for key, value in object.items():
+            if key == "@type":
+                continue
+            elif key == "#text" and isinstance(value, str):
+                # Try converting to int or float
+                try:
+                    return int(value) if value.isdigit() else float(value)
+                except ValueError:
+                    return value  # Leave as string if conversion fails
             else:
-                primary[key] = value
-    return primary
+                new_dict[key] = normalize_data(value)
+
+        return new_dict
+    elif isinstance(object, str):
+        try:
+            return int(object) if object.isdigit() else float(object)
+        except ValueError:
+            return object  # Leave as string if conversion fails
+
+    elif isinstance(object, list):
+        return [normalize_data(item) for item in object]
+    else:
+        return object
 
 def main(args):
     # Define services with corrected JSON payloads
@@ -181,7 +217,7 @@ def main(args):
          "Payload": {"RptSrv": {"UserName": args.username, "Password": args.password, "GetStats": {"type": "TAGLIST"}}},
          "Stats": {"Enabled": -1, "CpuTime": -1, "StatusNum": -1}}
     ]
-    
+    metricset = set()
     if args.debug:
         print(f"DEBUG: {args=}")
         print(f"DEBUG: Original services count: {len(services)}")
@@ -224,11 +260,12 @@ def main(args):
         
         # Use the session for requests
         for service in services:
+            headername = f"faxback_nsx_{service['Name'].lower()}"
+            metricprefix = 'fb_' + service["Params"]['_t'].split('_')[0]
+            url = f"{args.protocol}://{args.site}/rest/nsx/"
+            params = service["Params"]
+            headers = {"Content-Type": "application/json"}
             try:
-                url = f"{args.protocol}://{args.site}/rest/nsx/"
-                params = service["Params"]
-                headers = {"Content-Type": "application/json"}
-                # Use session.post instead of requests.post
                 response = session.post(url, json=service["Payload"], 
                                      headers=headers, params=params)
                 if args.debug:
@@ -237,11 +274,10 @@ def main(args):
                     print(f"DEBUG: {response.headers=}")
                     print(f"DEBUG: {response.text=}")
                 response.raise_for_status()
-                json_response = response.json()
+                json_response = normalize_data(response.json())
                 found = False
                 # Add auth error checking
                 for key, value in json_response.items():
-                    headername = f"faxback_nsx_{service['Name'].lower()}"
                     if isinstance(value, dict):
                         # Check for auth errors in GetStatsResponse
                         if "GetStatsResponse" in value:
@@ -256,9 +292,9 @@ def main(args):
                                     print(auth_error)
                                     continue
                             found = True
+                            stats = compare_dictionaries(service["Stats"], stats_response, metricprefix)
                             print(f"<<<{headername}:sep(0)>>>")
-                            normalized_stats = update_matching_keys(service["Stats"], stats_response)
-                            print(normalized_stats)
+                            print(normalize_data(stats))
 
                 if not found:
                     continue

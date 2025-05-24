@@ -26,16 +26,6 @@ def parse_faxback_nsx_provisioning_server(string_table) -> Dict[str, Any]:
     #print(f"Parsing string table: {string_table}")
     flatlist = list(itertools.chain.from_iterable(string_table))
     parsed = json.loads(" ".join(flatlist).replace("'", "\""))
-    
-    # Convert string numbers to numeric values
-    for key, value in parsed.items():
-        if isinstance(value, str) and value.isdigit():
-            parsed[key] = int(value)
-        elif isinstance(value, str) and value.replace('.', '').isdigit():
-            parsed[key] = float(value)
-        else:
-            parsed[key] = value
-            
     return parsed
 
 agent_section_faxback_nsx_provisioning_server = AgentSection(

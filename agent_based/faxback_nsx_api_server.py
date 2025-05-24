@@ -25,16 +25,6 @@ def parse_faxback_nsx_api_server(string_table) -> Dict[str, Any]:
     #print(f"Parsing string table: {string_table}")
     flatlist = list(itertools.chain.from_iterable(string_table))
     parsed = json.loads(" ".join(flatlist).replace("'", "\""))
-    
-    # Convert string numbers to numeric values
-    for key, value in parsed.items():
-        if isinstance(value, str) and value.isdigit():
-            parsed[key] = int(value)
-        elif isinstance(value, str) and value.replace('.', '').isdigit():
-            parsed[key] = float(value)
-        else:
-            parsed[key] = value
-            
     return parsed
 
 agent_section_faxback_nsx_api_server = AgentSection(
@@ -47,12 +37,6 @@ def discovery_faxback_nsx_api_server(section):
     yield Service()
 
 def check_faxback_nsx_api_server(section):
-
-    if section['Ready'] == 1:
-        yield Result(state=State.OK, summary=f"Service is reporting ready")
-    else:
-        yield Result(state=State.WARN, summary=f"Service is reporting ready as code {section['Ready']}. Needs identification")
-
     if section['StatusNum'] == 0:
         yield Result(state=State.OK, summary=f"Status Code is reported as {section['StatusNum']}")
     elif section['StatusNum'] == 30017:

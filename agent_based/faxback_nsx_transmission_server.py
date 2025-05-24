@@ -26,23 +26,6 @@ def parse_faxback_nsx_transmission_server(string_table) -> Dict[str, Any]:
     #print(f"Parsing string table: {string_table}")
     flatlist = list(itertools.chain.from_iterable(string_table))
     parsed = json.loads(" ".join(flatlist).replace("'", "\""))
-    
-    # Convert string numbers to numeric values
-    for key, value in parsed.items():
-        if isinstance(value, str) and value.isdigit():
-            parsed[key] = int(value)
-        elif isinstance(value, str) and value.replace('.', '').isdigit():
-            parsed[key] = float(value)
-        else:
-            if key == 'DatabaseConnections':
-                # Split the DatabaseConnections string into a dictionary
-                db_connections = {}
-                for db in value.split(';'):
-                    db_name, db_status = db.split('=')
-                    db_connections[db_name.strip()] = db_status.strip()
-                parsed[key] = db_connections
-            else:
-                parsed[key] = value
     return parsed
 
 agent_section_faxback_nsx_transmission_server = AgentSection(
@@ -68,19 +51,20 @@ def check_faxback_nsx_transmission_server(section):
     else:
         yield Result(state=State.WARN, summary=f"Service is reporting as code {section['Enabled']}. Needs identification")
     
-    if section['DatabaseConnections']:
-        for db_name, db_status in section['DatabaseConnections'].items():
-            details = ""
-            if db_status == 'Ok':
-                state = State.OK
-                details += f"Database connection {db_name} is {db_status}\n"
-                summary = f"Databases report OK status"
-            else:
-                state = State.WARN
-                details += f"Database connection {db_name} is {db_status}\n"
-                summary = f"Databases report issues"
-        yield Result(state=state, summary=summary, details=details)
+    if section.get('DatabaseConnections',{}):
+        details = ""
+        all_statuses = section['DatabaseConnections'].values()
+        if all(status == 'Ok' for status in all_statuses):
+            summary = "All databases report OK status"
+            state = State.OK
+        elif all(status != 'Ok' for status in all_statuses):
+            summary = "Databases report an issue"
+            state = State.CRIT
 
+        for db_name, db_status in section['DatabaseConnections'].items():
+            details += f"Database {db_name} is {db_status}.\n"
+            
+        yield Result(state=state, summary=summary, details=details)
 
     for key, value in section.items():
         if isinstance(value, (int, float)) and key not in ['Ready', 'Enabled', 'StatusNum']:

@@ -23,16 +23,6 @@ def parse_faxback_nsx_ata_connector(string_table) -> Dict[str, Any]:
     #print(f"Parsing string table: {string_table}")
     flatlist = list(itertools.chain.from_iterable(string_table))
     parsed = json.loads(" ".join(flatlist).replace("'", "\""))
-    
-    # Convert string numbers to numeric values
-    for key, value in parsed.items():
-        if isinstance(value, str) and value.isdigit():
-            parsed[key] = int(value)
-        elif isinstance(value, str) and value.replace('.', '').isdigit():
-            parsed[key] = float(value)
-        else:
-            parsed[key] = value
-            
     return parsed
 
 agent_section_faxback_nsx_ata_connector = AgentSection(
@@ -45,7 +35,6 @@ def discovery_faxback_nsx_ata_connector(section):
     yield Service()
 
 def check_faxback_nsx_ata_connector(section):
-
     if section['StatusNum'] == 0:
         yield Result(state=State.OK, summary=f"Status Code is reported as {section['StatusNum']}")
     elif section['StatusNum'] == 30017:
@@ -59,7 +48,7 @@ def check_faxback_nsx_ata_connector(section):
         yield Result(state=State.WARN, summary=f"Service is reporting as code {section['Enabled']}. Needs identification")
 
     for key, value in section.items():
-        if isinstance(value, (int, float)) and key not in ['Enabled', 'StatusNum']:
+        if isinstance(value, (int, float)) and key not in ['Ready', 'Enabled', 'StatusNum']:
            yield Metric(name=key, value=section.get(key,0))
     
 
