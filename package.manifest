@@ -4,7 +4,7 @@
                 'monitoring.\n',
  'download_url': 'https://github.com/scotsie/faxback_nsx',
  'files': {
-           'lib': ['python3/cmk_addons/plugins/faxback_nsx/agent_based/',
+           'lib': ['python3/cmk_addons/plugins/faxback_nsx/agent_based/faxback_nsx_api_server.py',
                    'python3/cmk_addons/plugins/faxback_nsx/agent_based/faxback_nsx_ata_connector.py',
                    'python3/cmk_addons/plugins/faxback_nsx/agent_based/faxback_nsx_blockconnection_server.py',
                    'python3/cmk_addons/plugins/faxback_nsx/agent_based/faxback_nsx_broadcast_server.py',
