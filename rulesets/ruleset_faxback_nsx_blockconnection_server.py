@@ -19,7 +19,7 @@ def _parameter_form_faxback_nsx_blockconnection_server():
         }
     )
 
-rule_spec_myhostgroups = CheckParameters(
+rule_spec_faxback_nsx_blockconnection_server = CheckParameters(
     name = "faxback_nsx_blockconnection_server",
     title = Title("FaxBack Block Connection Thresholds"),
     topic = Topic.GENERAL,
