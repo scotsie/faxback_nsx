@@ -36,7 +36,7 @@ def discovery_faxback_nsx_blockconnection_server(section):
 def check_faxback_nsx_blockconnection_server(params, section):
     """
     params as
-    Parameters({'block_connection_login_percentage': ('fixed', (80.0, 90.0))})
+    Parameters({'login_percentage_upper': ('fixed', (80.0, 90.0))})
     
     section as
     {'SendingCount': 4, 'ReceivingCount': 9, 'PeakSendingCount': 18, 'PeakReceivingCount': 40, 'SentCount': 7428, 'ReceivedCount': 22903, 'SentSeconds': 866235, 'ReceivedSeconds': 1728512, 'LoginCapacity': 4000, 'LoginCount': 980, 'PeakLoginCount': 987, 'Enabled': 1, 'TcpCurrentCount': 983, 'TcpPeakCount': 1324, 'TcpCount': 139807, 'HttpCurrentCount': 1, 'HttpPeakCount': 40, 'HttpCount': 5237036, 'CpuTime': 12, 'StatusNum': 0}
@@ -81,6 +81,6 @@ check_plugin_faxback_nsx_blockconnection_server = CheckPlugin(
     discovery_function=discovery_faxback_nsx_blockconnection_server,
     sections=["faxback_nsx_blockconnection_server"],
     check_function=check_faxback_nsx_blockconnection_server,
-    check_default_parameters = {},
+    check_default_parameters = {'login_percentage_upper': ('fixed', (80.0, 90.0))},
     check_ruleset_name = "faxback_nsx_blockconnection_server"
 )
