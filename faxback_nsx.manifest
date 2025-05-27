@@ -1,32 +1,27 @@
 {'author': 'Scotsie (mscottcrace@gmail.com)',
  'description': 'A special agent meant to query the Faxback device API(s) and '
                 'if a response is found, return metrics for graphing and '
-                'monitoring.\n'
-                '\n'
-                'TO DO:\n'
-                '- Production side bug with query Broadcast_Server, '
-                'Report_Server\n'
-                '- Graph layout improvements\n'
-                '- Dynamic thresholding via GUI\n',
+                'monitoring.\n',
  'download_url': 'https://github.com/scotsie/faxback_nsx',
- 'files': {'cmk_addons_plugins': ['faxback_nsx/agent_based/faxback_nsx_api_server.py',
-                                  'faxback_nsx/agent_based/faxback_nsx_ata_connector.py',
-                                  'faxback_nsx/agent_based/faxback_nsx_blockconnection_server.py',
-                                  'faxback_nsx/agent_based/faxback_nsx_broadcast_server.py',
-                                  'faxback_nsx/agent_based/faxback_nsx_conversion_server.py',
-                                  'faxback_nsx/agent_based/faxback_nsx_mail_server.py',
-                                  'faxback_nsx/agent_based/faxback_nsx_port_server.py',
-                                  'faxback_nsx/agent_based/faxback_nsx_provisioning_server.py',
-                                  'faxback_nsx/agent_based/faxback_nsx_queue_server.py',
-                                  'faxback_nsx/agent_based/faxback_nsx_report_server.py',
-                                  'faxback_nsx/agent_based/faxback_nsx_transmission_server.py',
-                                  'faxback_nsx/graphing/graphing_faxback_nsx.py',
-                                  'faxback_nsx/libexec/agent_faxback_nsx',
-                                  'faxback_nsx/rulesets/faxback_nsx_special_agent.py',
-                                  'faxback_nsx/server_side_calls/special_agent.py']},
+ 'files': {
+           'lib': ['python3/cmk_addons/plugins/faxback_nsx/agent_based/',
+                   'python3/cmk_addons/plugins/faxback_nsx/agent_based/faxback_nsx_ata_connector.py',
+                   'python3/cmk_addons/plugins/faxback_nsx/agent_based/faxback_nsx_blockconnection_server.py',
+                   'python3/cmk_addons/plugins/faxback_nsx/agent_based/faxback_nsx_broadcast_server.py',
+                   'python3/cmk_addons/plugins/faxback_nsx/agent_based/faxback_nsx_conversion_server.py',
+                   'python3/cmk_addons/plugins/faxback_nsx/agent_based/faxback_nsx_mail_server.py',
+                   'python3/cmk_addons/plugins/faxback_nsx/agent_based/faxback_nsx_port_server.py',
+                   'python3/cmk_addons/plugins/faxback_nsx/agent_based/faxback_nsx_provisioning_server.py',
+                   'python3/cmk_addons/plugins/faxback_nsx/agent_based/faxback_nsx_queue_server.py',
+                   'python3/cmk_addons/plugins/faxback_nsx/agent_based/faxback_nsx_report_server.py',
+                   'python3/cmk_addons/plugins/faxback_nsx/agent_based/faxback_nsx_transmission_server.py',
+                   'python3/cmk_addons/plugins/faxback_nsx/graphing/graphing_faxback_nsx.py',
+                   'python3/cmk_addons/plugins/faxback_nsx/libexec/agent_faxback_nsx',
+                   'python3/cmk_addons/plugins/faxback_nsx/rulesets/faxback_nsx_special_agent.py',
+                   'python3/cmk_addons/plugins/faxback_nsx/server_side_calls/special_agent.py']},
  'name': 'faxback_nsx',
  'title': 'Faxback NSX REST API Special Agent',
- 'version': '2.3.0',
+ 'version': '2.3.1',
  'version.min_required': '2.3.0p12',
  'version.packaged': '2.3.0p19',
  'version.usable_until': '2.5.0'}
