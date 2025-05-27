@@ -11,11 +11,7 @@ import json
 # Special Agent Output to Parse for this service
 """
 <<<faxback_nsx_broadcast_server:sep(0)>>>
-{'Enabled': 1, 'CpuTime': 5, 'DatabaseConnections': {
- 'FaxSendDb': 'Ok', 'FaxSendDocsDb': 'Ok', 'FaxSendTransDb': 'Ok',
- 'FaxActionDb': 'Ok', 'ServerAlertsDb': 'Ok', 'ServersDb': 'Ok',
- 'BroadcastDb': 'Ok', 'BroadcastRecipientDb': 'Ok', 'BroadcastAttachmentDb': 'Ok',
- 'BroadcastValidationDb': 'Ok', 'FaxReceiveDb': 'Ok', 'FaxEmailDb': 'Ok'}, 'StatusNum': 0}
+{'Enabled': 1, 'CpuTime': 0, 'DatabaseConnections': {'FaxSendDb': 'Ok', 'FaxSendDocsDb': 'Ok', 'FaxSendTransDb': 'Ok', 'FaxActionDb': 'Ok', 'ServerAlertsDb': 'Ok', 'ServersDb': 'Ok', 'BroadcastDb': 'Ok', 'BroadcastRecipientDb': 'Ok', 'BroadcastAttachmentDb': 'Ok', 'BroadcastValidationDb': 'Ok', 'FaxReceiveDb': 'Ok', 'FaxEmailDb': 'Ok'}, 'StatusNum': 0}
 """
 def parse_faxback_nsx_broadcast_server(string_table) -> Dict[str, Any]:
     """
