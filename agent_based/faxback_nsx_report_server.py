@@ -11,7 +11,7 @@ import json
 # Special Agent Output to Parse for this service
 """
 <<<faxback_nsx_report_server:sep(0)>>>
-{'Enabled': '1', 'CpuPeakTime': '100', 'CpuTime': '9', 'StatusNum': '0'}
+{'Enabled': 1, 'CpuTime': 1, 'StatusNum': 0}
 """
 def parse_faxback_nsx_report_server(string_table) -> Dict[str, Any]:
     """

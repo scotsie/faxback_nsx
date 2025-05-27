@@ -11,11 +11,7 @@ import json
 # Special Agent Output to Parse for this service
 """
 <<<faxback_nsx_email_server:sep(0)>>>
-{'Enabled': '1', 'CpuPeakTime': '100', 'CpuTime': '36',
- 'DatabaseConnections': 'DomainsNSDb=Ok; MailAuthDb=Ok; FaxSendDb=Ok;
-  FaxSendDocsDb=Ok; FaxSendTransDb=Ok; FaxReceiveDb=Ok; FaxEmailDb=Ok;
-  FaxActionDb=Ok; ServerAlertsDb=Ok; ServersDb=Ok; MailInboxDb=Ok',
-  'EmailReceivedCount': '0', 'EmailSentCount': '0', 'StatusNum': '0'}
+{'Enabled': 1, 'CpuTime': 0, 'DatabaseConnections': {'DomainsNSDb': 'Ok', 'MailAuthDb': 'Ok', 'FaxSendDb': 'Ok', 'FaxSendDocsDb': 'Ok', 'FaxSendTransDb': 'Ok', 'FaxReceiveDb': 'Ok', 'FaxEmailDb': 'Ok', 'FaxActionDb': 'Ok', 'ServerAlertsDb': 'Ok', 'ServersDb': 'Ok', 'MailInboxDb': 'Ok'}, 'fb_em_EmailReceivedCount': 0, 'fb_em_EmailSentCount': 0, 'StatusNum': 0}
 """
 def parse_faxback_nsx_mail_server(string_table) -> Dict[str, Any]:
     """

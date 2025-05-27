@@ -11,13 +11,7 @@ import json
 # Special Agent Output to Parse for this service
 """
 <<<faxback_nsx_blockconnection_server:sep(0)>>>
-{'SendingCount': '0', 'ReceivingCount': '0', 'PeakSendingCount': '0',
- 'PeakReceivingCount': '0', 'SentCount': '0', 'ReceivedCount': '0',
- 'SentSeconds': '0', 'ReceivedSeconds': '0', 'LoginCapacity': '4000',
- 'LoginCount': '2', 'PeakLoginCount': '2', 'Enabled': '1',
- 'TcpCurrentCount': '5', 'TcpPeakCount': '6', 'TcpCount': '2913',
- 'HttpCurrentCount': '1', 'HttpPeakCount': '2', 'HttpCount': '388796',
- 'CpuPeakTime': '100', 'CpuTime': '19', 'StatusNum': '0'}
+{'fb_cs_SendingCount': 0, 'fb_cs_ReceivingCount': 0, 'SentSeconds': 0, 'ReceivedSeconds': 0, 'LoginCapacity': 4000, 'fb_cs_LoginCount': 1, 'Enabled': 1, 'fb_cs_TcpCurrentCount': 4, 'fb_cs_HttpCurrentCount': 1, 'CpuTime': 11, 'StatusNum': 0}
 """
 def parse_faxback_nsx_blockconnection_server(string_table) -> Dict[str, Any]:
     """
@@ -42,12 +36,13 @@ def discovery_faxback_nsx_blockconnection_server(section):
 def check_faxback_nsx_blockconnection_server(params, section):
     """
     params as
-    Parameters({'block_connection_login_percentage': ('fixed', (85.0, 95.0))})
-
+    Parameters({'block_connection_login_percentage': ('fixed', (80.0, 90.0))})
+    
     section as
     {'SendingCount': 4, 'ReceivingCount': 9, 'PeakSendingCount': 18, 'PeakReceivingCount': 40, 'SentCount': 7428, 'ReceivedCount': 22903, 'SentSeconds': 866235, 'ReceivedSeconds': 1728512, 'LoginCapacity': 4000, 'LoginCount': 980, 'PeakLoginCount': 987, 'Enabled': 1, 'TcpCurrentCount': 983, 'TcpPeakCount': 1324, 'TcpCount': 139807, 'HttpCurrentCount': 1, 'HttpPeakCount': 40, 'HttpCount': 5237036, 'CpuTime': 12, 'StatusNum': 0}
     """
-    _, (loginwarn, logincrit) = params['block_connection_login_percentage']
+
+    _, (loginwarn, logincrit) = params['login_percentage_upper']
 
     if section['StatusNum'] == 0:
         yield Result(state=State.OK, summary=f"Status Code is reported as {section['StatusNum']}")

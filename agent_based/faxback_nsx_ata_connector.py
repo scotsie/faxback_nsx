@@ -11,8 +11,7 @@ import json
 # Special Agent Output to Parse for this service
 """
 <<<faxback_nsx_ata_connector:sep(0)>>>
-{'SendingCount': '0', 'ReceivingCount': '0', 'PeakSendingCount': '0',
- 'PeakReceivingCount': '0', 'SentCount': -1, 'ReceivedCount': -1, 'SentSeconds': '0', 'ReceivedSeconds': '0', 'LoginCount': '0', 'LoginCapacity': '200', 'PeakLoginCount': '0', 'Enabled': '1', 'TcpCurrentCount': '3', 'TcpPeakCount': '3', 'TcpCount': '257', 'HttpCurrentCount': '1', 'HttpPeakCount': '1', 'HttpCount': '50784', 'CpuPeakTime': '100', 'CpuTime': '5', 'StatusNum': '0', 'SendPorts': '0', 'TotalMemoryMb': '3.35', 'PrivateMemoryMb': '28.43', 'PagedMemoryMb': '28.43', 'NonPagedSystemMemoryMb': '0.07', 'PeakWorkingSetMemoryMb': '58.29', 'PeakPagedMemoryMb': '31.81', 'PeakVirtualMemoryMb': '220.16'}
+{'fb_at_SendingCount': 0, 'fb_at_ReceivingCount': 0, 'SentSeconds': 0, 'ReceivedSeconds': 0, 'fb_at_LoginCount': 0, 'LoginCapacity': 200, 'Enabled': 1, 'fb_at_TcpCurrentCount': 1, 'fb_at_HttpCurrentCount': 1, 'CpuTime': 0, 'StatusNum': 0, 'SendPorts': 0, 'TotalMemoryMb': 3.3, 'PrivateMemoryMb': 28.43, 'PagedMemoryMb': 28.43, 'NonPagedSystemMemoryMb': 0.07, 'PeakWorkingSetMemoryMb': 58.29, 'PeakPagedMemoryMb': 31.81, 'PeakVirtualMemoryMb': 220.16}
 """
 def parse_faxback_nsx_ata_connector(string_table) -> Dict[str, Any]:
     """

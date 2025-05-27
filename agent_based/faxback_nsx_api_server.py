@@ -11,10 +11,7 @@ import json
 # Special Agent Output to Parse for this service
 """
 <<<faxback_nsx_api_server:sep(0)>>>
-{'Enabled': '1', 'Ready': '1', 'TcpCurrentCount': '4',
- 'TcpPeakCount': '6', 'TcpCount': '14653', 'HttpCurrentCount': '1',
- 'HttpPeakCount': '3', 'HttpCount': '87520', 'CpuPeakTime': '100',
- 'CpuTime': '3', 'StatusNum': '0'}
+{'Enabled': 1, 'Ready': 1, 'fb_ns_TcpCurrentCount': 3, 'fb_ns_HttpCurrentCount': 1, 'CpuTime': 14, 'StatusNum': 0}
 """
 def parse_faxback_nsx_api_server(string_table) -> Dict[str, Any]:
     """
