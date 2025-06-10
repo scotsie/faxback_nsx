@@ -19,8 +19,8 @@ def parse_args():
                         help='Username to login to the REST API.')
     parser.add_argument('--password',
                         help='Password to login to the REST API.')
-    parser.add_argument('--pw2',
-                        help='PW2 formatted auth to login to the REST API.')
+    #parser.add_argument('--pw2',
+    #                    help='PW2 formatted auth to login to the REST API.')
     parser.add_argument('--protocol',
                         choices=['http', 'https'],
                         default='https',
@@ -107,14 +107,25 @@ def normalize_data(object):
     else:
         return object
 
+def pw2_encode(password: str) -> str:
+    utf8_bytes = password.encode('utf-8')
+    scrambled = bytearray()
+    flip = 0
+    for i in range(len(utf8_bytes) - 1, -1, -1):
+        flip = (flip + 141) & 0xFF
+        scrambled.insert(0, utf8_bytes[i] ^ flip)
+    return base64.b64encode(scrambled).decode('utf-8')
+
 def main(args):
+    # Encode the password into pw2 formatting for some payloads requiring it.
+    pw2_pass = pw2_encode(args.password)
     # Define services with corrected JSON payloads
     services = [
         {"Name": "BlockConnection_Server",
          "Params": {"_t": "cs_js"},
          "Port": 60,
          "PayloadName": "IPFSConSrv",
-         "Payload": {"IPFSConSrv":{"GetStats":{"PW2":args.pw2}}},
+         "Payload": {"IPFSConSrv":{"GetStats":{"PW2":pw2_pass}}},
          "Stats": {"SendingCount": -1, "ReceivingCount": -1, "SentSeconds": -1,
                    "ReceivedSeconds": -1, "LoginCapacity": -1, "LoginCount": -1,
                    "Enabled": -1, "TcpCurrentCount": -1, "HttpCurrentCount": -1,
@@ -123,7 +134,7 @@ def main(args):
          "Params": {"_t": "ps_js"},
          "Port": 61,
          "PayloadName": "IPFSPortSrv",
-         "Payload": {"IPFSPortSrv":{"GetStats":{"PW2":args.pw2}}},
+         "Payload": {"IPFSPortSrv":{"GetStats":{"PW2":pw2_pass}}},
          "Stats": {"SendingCount": -1, "ReceivingCount": -1, "SentSeconds": -1,
                    "ReceivedSeconds": -1, "LoginCount": -1, "Enabled": -1, "TcpCurrentCount": -1,
                    "HttpCurrentCount": -1, "CpuTime": -1, "StatusNum": -1}},
@@ -131,7 +142,7 @@ def main(args):
          "Params": {"_t": "qs_js"},
          "Port": 72,
          "PayloadName": "IPFSQueueSrv",
-         "Payload": {"IPFSQueueSrv":{"GetStats":{"PW2":args.pw2}}},
+         "Payload": {"IPFSQueueSrv":{"GetStats":{"PW2":pw2_pass}}},
          "Stats": {"SendingCount": -1, "ReceivingCount": -1, "SentSeconds": -1,
                    "ReceivedSeconds": -1, "LoginCount": -1, "Enabled": -1,
                    "TcpCurrentCount": -1, "HttpCurrentCount": -1, "CpuTime": -1,
@@ -167,14 +178,14 @@ def main(args):
          "Params": {"_t": "cv_js"},
          "Port": 67,
          "PayloadName": "DocConSrv",
-         "Payload": {"DocConSrv": {"PW2": args.pw2,"GetStats": {"type": "TAGLIST"}}},
+         "Payload": {"DocConSrv": {"PW2": pw2_pass,"GetStats": {"type": "TAGLIST"}}},
          "Stats": {"Enabled": -1, "CpuTime": -1, "DatabaseConnections": "NULL",
                    "ConversionsInProgress": -1, "StatusNum": -1}},
         {"Name": "Transmission_Server",
          "Params": {"_t": "tx_js"},
          "Port": 66,
          "PayloadName": "TrnSrv",
-         "Payload": {"TrnSrv": {"PW2": args.pw2,"GetStats": {"type": "TAGLIST"}}},
+         "Payload": {"TrnSrv": {"PW2": pw2_pass,"GetStats": {"type": "TAGLIST"}}},
          "Stats": {"Enabled": -1, "CpuTime": -1,
                    "DatabaseConnections": "NULL", "ReceivingCount": -1, "SendingCount": -1,
                    "SendPendingCount": -1, "StatusNum": -1}},
@@ -182,7 +193,7 @@ def main(args):
          "Params": {"_t": "em_js"},
          "Port": 68,
          "PayloadName": "EmailSrv",
-         "Payload": {"EmailSrv": {"PW2": args.pw2,"GetStats": {"type": "TAGLIST"}}},
+         "Payload": {"EmailSrv": {"PW2": pw2_pass,"GetStats": {"type": "TAGLIST"}}},
          "Stats": {"Enabled": -1, "CpuTime": -1,
                    "DatabaseConnections": "NULL", "EmailReceivedCount": -1, "EmailSentCount": -1,
                    "StatusNum": -1}},
@@ -190,7 +201,7 @@ def main(args):
          "Params": {"_t": "bs_js"},
          "Port": 69,
          "PayloadName": "BroadcastSrv",
-         "Payload": {"BroadcastSrv": {"PW2": args.pw2,"GetStats": {"type": "TAGLIST"}}},
+         "Payload": {"BroadcastSrv": {"PW2": pw2_pass,"GetStats": {"type": "TAGLIST"}}},
          "Stats": {"Enabled": -1, "CpuTime": -1, "DatabaseConnections": "NULL",
                    "StatusNum": -1}},
         {"Name": "Report_Server", 

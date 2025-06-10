@@ -39,14 +39,6 @@ def _valuespec_special_agents_faxback_nsx() -> Dictionary:
                  ),
                  required=True,
             ),
-            "pw2": DictElement(
-                 parameter_form=Password(
-                      title=Title("PW2 Encoded Credentials"),
-                      custom_validate=(validators.LengthInRange(min_value=1),),
-                      migrate=migrate_to_password,
-                 ),
-                 required=True,
-            ),
             "protocol": DictElement(
                 parameter_form=CascadingSingleChoice(
                     title=Title("Advanced - Protocol"),

@@ -18,7 +18,6 @@ class Params(BaseModel):
     """params validator"""
     username: str | None = None
     password: Secret | None = None
-    pw2: Secret | None = None
     site: str | None = None
     protocol: tuple[str, str | None] = ("https", None) 
     debug: bool | None = None
@@ -33,8 +32,6 @@ def _agent_faxback_nsx_arguments(
         args += ["--username", params.username]
     if params.password is not None:
         args += ["--password", params.password.unsafe()]
-    if params.pw2 is not None:
-        args += ["--pw2", params.pw2.unsafe()]
     if params.protocol is not None:
         args += ["--protocol", params.protocol[0]]
     if params.site is not None:
