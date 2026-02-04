@@ -297,7 +297,9 @@ def main(args):
                     print(f"Connection error: {e}")
                 continue
             except Exception as e:
-                print(f"Error contacting {service['Name']}: {e}")
+                if args.debug:
+                    print(f"Error contacting {service['Name']}: {e}")
+                continue
 
 if __name__ == "__main__":
     args = parse_args()
