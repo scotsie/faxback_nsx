@@ -48,7 +48,9 @@ def check_faxback_nsx_provisioning_server(section):
         yield Result(state=State.WARN, summary=f"Status Code {section['StatusNum']} with descriptor {section.get('Status', 'None provided')}")
 
     if section['Enabled'] == 1:
-        yield Result(state=State.OK, summary=f"Service is reporting enabled")
+        yield Result(state=State.OK, summary=f"Service is reporting enabled.")
+    elif section['Enabled'] == 0:
+        yield Result(state=State.CRIT, summary=f"Service is reporting disabled.")
     else:
         yield Result(state=State.WARN, summary=f"Service is reporting as code {section['Enabled']}. Needs identification")
 
