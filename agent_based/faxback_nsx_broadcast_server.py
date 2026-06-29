@@ -53,7 +53,8 @@ def check_faxback_nsx_broadcast_server(section):
             summary = "All databases report OK status"
             state = State.OK
         elif any(status != 'Ok' for status in all_statuses):
-            summary = "One or more databases report an issue"
+            failed_dbs = [name for name, status in section['DatabaseConnections'].items() if status != 'Ok']
+            summary = f"One or more databases report an issue: {', '.join(failed_dbs)}"
             state = State.CRIT
 
         for db_name, db_status in section['DatabaseConnections'].items():
